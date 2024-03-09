@@ -3,7 +3,7 @@
 set -eu
 
 source="$PWD/out/rootfs.tar.gz"
-target="$PWD/out/vault.tar.xz"
+target="$PWD/out/${PACKER_BUILD_NAME}.tar.xz"
 
 
 temp=$(mktemp -d)
@@ -19,3 +19,5 @@ rm "${source}"
 
 cd ..
 rm -rf "${temp}"
+
+cp "${target}" /var/lib/vz/template/cache/

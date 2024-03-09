@@ -7,7 +7,7 @@ packer {
   }
 }
 
-source "lxc" "alpine" {
+source "lxc" "vault" {
   config_file               = "config"
   template_name             = "download"
   template_parameters = [
@@ -20,7 +20,7 @@ source "lxc" "alpine" {
 }
 
 build {
-  sources = [ "lxc.alpine" ]
+  sources = [ "lxc.vault" ]
 
   provisioner "shell" {
     inline = [
@@ -52,6 +52,6 @@ build {
   }
 
   post-processor "shell-local" {
-    script = "./post-process.sh"
+    script = "../post-process.sh"
   }
 }
