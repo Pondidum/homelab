@@ -9,8 +9,11 @@ import (
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 
+		node, _ := ctx.GetConfig("proxmox:nodename")
+		storage, _ := ctx.GetConfig("proxmox:storage")
+
 		container, err := ct.NewContainer(ctx, "vault", &ct.ContainerArgs{
-			NodeName: pulumi.String("pve"),
+			NodeName: pulumi.String(node),
 			Initialization: ct.ContainerInitializationArgs{
 				Hostname: pulumi.String("vault"),
 				UserAccount: ct.ContainerInitializationUserAccountArgs{
@@ -22,7 +25,7 @@ func main() {
 				TemplateFileId: pulumi.String("local:vztmpl/vault.tar.xz"),
 			},
 			Disk: ct.ContainerDiskArgs{
-				DatastoreId: pulumi.String("local-lvm"),
+				DatastoreId: pulumi.String(storage),
 				Size:        pulumi.IntPtr(8),
 			},
 			Cpu: ct.ContainerCpuArgs{
@@ -41,7 +44,7 @@ func main() {
 			},
 			MountPoints: ct.ContainerMountPointArray{
 				ct.ContainerMountPointArgs{
-					Volume: pulumi.String("local-lvm"),
+					Volume: pulumi.String(storage),
 					Path:   pulumi.String("/var/lib/vault"),
 					Size:   pulumi.String("4G"),
 				},
