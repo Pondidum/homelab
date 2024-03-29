@@ -1,0 +1,5 @@
+config:
+  proxmoxve:endpoint: https://192.168.121.252:8006
+  proxmoxve:insecure: true
+  proxmoxve:username: root@pam
+  proxmoxve:password: vagrant

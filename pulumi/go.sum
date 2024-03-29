@@ -244,6 +244,8 @@ github.com/muesli/termenv v0.15.2 h1:GohcuySI0QmI3wN8Ok9PtKGkgkFIk7y6Vpb5PvrY+Wo
 github.com/muesli/termenv v0.15.2/go.mod h1:Epx+iuz8sNs7mNKhxzH4fWXGNpZwUaJKRS1noLXviQ8=
 github.com/muhlba91/pulumi-proxmoxve/sdk/v5 v5.25.0 h1:kWxQZmNAj04Qrhy2q3xQ7b63f04kjrn9EbJI6iEdgNw=
 github.com/muhlba91/pulumi-proxmoxve/sdk/v5 v5.25.0/go.mod h1:fTgbhtBICcXTfK28+gWlL6ye5XZS/JY/Yjh2YB2KgG8=
+github.com/muhlba91/pulumi-proxmoxve/sdk/v6 v6.1.0 h1:bbzXR8FP0WtERneyy+EFHK6R7mvPc6qrnerRYKjQZAo=
+github.com/muhlba91/pulumi-proxmoxve/sdk/v6 v6.1.0/go.mod h1:IzPdXMQM12Wl/76LTcewCbj9ttqdcd+IG6k5jppdAws=
 github.com/natefinch/atomic v1.0.1/go.mod h1:N/D/ELrljoqDyT3rZrsUmtsuzvHkeB/wWjHV22AZRbM=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
 github.com/oklog/run v1.1.0/go.mod h1:sVPdnTZT1zYwAJeCMu2Th4T21pA3FPOQRfWjQlk7DVU=
@@ -280,6 +282,8 @@ github.com/pulumi/pulumi-vault/sdk/v5 v5.20.0/go.mod h1:c0/jn3yWp8j9SabSDWPfWeh3
 github.com/pulumi/pulumi/pkg/v3 v3.98.0/go.mod h1:aeQmrCMwvMOIz1s6qOk+vg1oCWff5hmeRrg1vYv8eRU=
 github.com/pulumi/pulumi/sdk/v3 v3.108.1 h1:5idjc3JmzToYVizRPbFyjJ5UU4AbExd04pcSP9AhPEc=
 github.com/pulumi/pulumi/sdk/v3 v3.108.1/go.mod h1:5A6GHUwAJlRY1SSLZh84aDIbsBShcrfcmHzI50ecSBg=
+github.com/pulumi/pulumi/sdk/v3 v3.111.1 h1:uOeG/b6YxBuL59xHtmFPspMa8BB6ovjHelL7sVCGJZw=
+github.com/pulumi/pulumi/sdk/v3 v3.111.1/go.mod h1:5A6GHUwAJlRY1SSLZh84aDIbsBShcrfcmHzI50ecSBg=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.4 h1:8TfxU8dW6PdqD27gjM8MVNuicgxIjxpm4K7x4jp8sis=

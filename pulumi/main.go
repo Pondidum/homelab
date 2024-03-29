@@ -1,28 +1,13 @@
 package main
 
 import (
-
-	// "github.com/muhlba91/pulumi-proxmoxve/sdk/v3/go/proxmoxve/ct"
-
-	"github.com/muhlba91/pulumi-proxmoxve/sdk/v5/go/proxmoxve"
-	"github.com/muhlba91/pulumi-proxmoxve/sdk/v5/go/proxmoxve/ct"
+	"github.com/muhlba91/pulumi-proxmoxve/sdk/v6/go/proxmoxve/ct"
 	"github.com/pulumi/pulumi-vault/sdk/v5/go/vault"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-
-		pve, err := proxmoxve.NewProvider(ctx, "pve", &proxmoxve.ProviderArgs{
-
-			Endpoint: pulumi.String("https://192.168.121.48:8006"),
-			Insecure: pulumi.Bool(true),
-			Username: pulumi.String("root@pam"),
-			Password: pulumi.String("vagrant"),
-		})
-		if err != nil {
-			return err
-		}
 
 		container, err := ct.NewContainer(ctx, "vault", &ct.ContainerArgs{
 			NodeName: pulumi.String("pve"),
@@ -54,7 +39,15 @@ func main() {
 					Firewall: pulumi.Bool(true),
 				},
 			},
-		}, pulumi.Provider(pve))
+			MountPoints: ct.ContainerMountPointArray{
+				ct.ContainerMountPointArgs{
+					Volume: pulumi.String("local-lvm"),
+					Path:   pulumi.String("/var/lib/vault"),
+					Size:   pulumi.String("4G"),
+				},
+			},
+			Unprivileged: pulumi.Bool(true),
+		})
 		if err != nil {
 			return err
 		}
