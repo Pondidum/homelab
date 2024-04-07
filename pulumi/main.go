@@ -38,7 +38,7 @@ func main() {
 			NetworkInterfaces: ct.ContainerNetworkInterfaceArray{
 				ct.ContainerNetworkInterfaceArgs{
 					Name:     pulumi.String("eth0"),
-					Bridge:   pulumi.String("vmbr0"),
+					Bridge:   pulumi.String("vnet0"),
 					Firewall: pulumi.Bool(true),
 				},
 			},
