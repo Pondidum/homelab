@@ -124,7 +124,7 @@ func nomadContainer(ctx *pulumi.Context) (*ct.Container, error) {
 			},
 		},
 
-		Unprivileged: pulumi.Bool(false),
+		Unprivileged: pulumi.Bool(true),
 		Features: ct.ContainerFeaturesArgs{
 			Nesting: pulumi.Bool(true),
 		},
