@@ -21,22 +21,6 @@ func main() {
 		}
 
 		ctx.Export("nomad", nomad.ID())
-		// n0, err := nomadContainer(ctx, 0)
-		// if err != nil {
-		// 	return err
-		// }
-		// n1, err := nomadContainer(ctx, 1)
-		// if err != nil {
-		// 	return err
-		// }
-		// n2, err := nomadContainer(ctx, 2)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// ctx.Export("nomad0", n0.ID())
-		// ctx.Export("nomad1", n1.ID())
-		// ctx.Export("nomad2", n2.ID())
 
 		return nil
 	})
@@ -135,6 +119,70 @@ func nomadContainer(ctx *pulumi.Context) (*ct.Container, error) {
 		NetworkInterfaces: ct.ContainerNetworkInterfaceArray{
 			ct.ContainerNetworkInterfaceArgs{
 				Name:     pulumi.String("eth0"),
+				Bridge:   pulumi.String(privateBridge),
+				Firewall: pulumi.Bool(true),
+			},
+		},
+
+		Unprivileged: pulumi.Bool(false),
+		Features: ct.ContainerFeaturesArgs{
+			Nesting: pulumi.Bool(true),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return container, nil
+}
+
+func ingressContainer(ctx *pulumi.Context) (*ct.Container, error) {
+
+	node, _ := ctx.GetConfig("proxmox:nodename")
+	storage, _ := ctx.GetConfig("proxmox:storage")
+	bridge, _ := ctx.GetConfig("proxmox:bridge")
+	privateBridge, _ := ctx.GetConfig("proxmox:bridge")
+
+	container, err := ct.NewContainer(ctx, "ingress", &ct.ContainerArgs{
+		NodeName: pulumi.String(node),
+		Initialization: ct.ContainerInitializationArgs{
+			Hostname: pulumi.String("ingress"),
+			UserAccount: ct.ContainerInitializationUserAccountArgs{
+				Password: pulumi.String("ingress"),
+			},
+			Dns: ct.ContainerInitializationDnsArgs{
+				Server: pulumi.String("10.0.0.1"),
+			},
+			IpConfigs: ct.ContainerInitializationIpConfigArray{
+				ct.ContainerInitializationIpConfigArgs{
+					Ipv4: ct.ContainerInitializationIpConfigIpv4Args{Address: pulumi.String("dhcp")},
+					Ipv6: ct.ContainerInitializationIpConfigIpv6Args{Address: pulumi.String("dhcp")},
+				},
+			},
+		},
+		OperatingSystem: ct.ContainerOperatingSystemArgs{
+			Type:           pulumi.String("ubuntu"),
+			TemplateFileId: pulumi.String("local:vztmpl/ingress.tar.xz"),
+		},
+		Disk: ct.ContainerDiskArgs{
+			DatastoreId: pulumi.String(storage),
+			Size:        pulumi.IntPtr(20),
+		},
+		Cpu: ct.ContainerCpuArgs{
+			Cores: pulumi.IntPtr(4),
+		},
+		Memory: ct.ContainerMemoryArgs{
+			Dedicated: pulumi.IntPtr(4096),
+			Swap:      pulumi.IntPtr(4096),
+		},
+		NetworkInterfaces: ct.ContainerNetworkInterfaceArray{
+			ct.ContainerNetworkInterfaceArgs{
+				Name:     pulumi.String("eth0"),
+				Bridge:   pulumi.String(bridge),
+				Firewall: pulumi.Bool(true),
+			},
+			ct.ContainerNetworkInterfaceArgs{
+				Name:     pulumi.String("private0"),
 				Bridge:   pulumi.String(privateBridge),
 				Firewall: pulumi.Bool(true),
 			},
