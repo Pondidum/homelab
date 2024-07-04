@@ -1,0 +1,5 @@
+template=alpine-cloud.tar.xz
+hostname=alpinecloud
+memory=512
+rootsize=8
+bootscript=boot.sh
