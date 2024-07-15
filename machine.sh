@@ -27,15 +27,16 @@ host_dir="/var/lib/lxc/${vmid}/host"
 mkdir -p "${host_dir}"
 mkdir -p "${host_dir}/boot"
 
-# secrets_file="/var/lib/lxc/${vmid}/secrets"
-# onboot_file="/var/lib/lxc/${vmid}/user.start"
 
 # write secrets
 echo "SECRET=value" > "${host_dir}/secrets"
 
 # configure boot script
-cp "${machine_config}/${bootscript}" "${host_dir}/boot/user.start"
-chmod +x "${host_dir}/boot/user.start"
+if [ -n "${bootscript}" ]; then
+  echo "--> configuring boot script"
+  cp "${machine_config}/${bootscript}" "${host_dir}/boot/user.start"
+  chmod +x "${host_dir}/boot/user.start"
+fi
 
 pct create "${vmid}" "${template_path}/${template}" \
   --hostname "${hostname}"  \
