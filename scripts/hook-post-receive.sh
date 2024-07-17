@@ -11,11 +11,17 @@ git show "${branch}:scripts/hook-post-receive.sh" > hooks/post-receive
 rm -rf "$HOME/homelab"
 mkdir -p "$HOME/homelab"
 
-echo "==> Deploy Running"
-echo "    branch: ${branch}"
-
 git --work-tree="$HOME/homelab" checkout -f "${branch}"
 
 cd "$HOME/homelab"
+
+
+export RED="\033[0;31m"
+export GREEN="\033[0;32m"
+export YELLOW="\033[0;33m"
+export BLUE="\033[0;34m"
+export COLOR_RESET="\033[0m"
+
+echo "${BLUE}==> Running scripts/deploy.sh${COLOR_RESET}"
 
 ./scripts/deploy.sh
