@@ -24,4 +24,8 @@ export COLOR_RESET="\033[0m"
 
 echo "${BLUE}==> Running scripts/deploy.sh${COLOR_RESET}"
 
-./scripts/deploy.sh
+if ./scripts/deploy.sh; then
+  echo "${GREEN}==> Done${COLOR_RESET}"
+else
+  echo "${RED}==> Failed${COLOR_RESET}"
+fi
