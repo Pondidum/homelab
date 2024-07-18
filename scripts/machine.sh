@@ -32,10 +32,15 @@ mkdir -p "${host_dir}/boot"
 echo "SECRET=value" > "${host_dir}/secrets"
 
 # configure boot script
-if [ -n "${bootscript}" ]; then
+if [ -n "${bootscript:-""}" ]; then
   echo "--> configuring boot script"
   cp "${machine_config}/${bootscript}" "${host_dir}/boot/user.start"
   chmod +x "${host_dir}/boot/user.start"
+fi
+
+extra_mounts=""
+if [ -n "${volume:-""}" ]; then
+  extra_mounts="--mp2 ${volume}"
 fi
 
 pct create "${vmid}" "${template_path}/${template}" \
@@ -46,6 +51,7 @@ pct create "${vmid}" "${template_path}/${template}" \
   --rootfs "local-lvm:${rootsize}" \
   --mp0 "${host_dir},mp=/host" \
   --mp1 "${host_dir}/boot,mp=/etc/local.d" \
+  ${extra_mounts} \
   --unprivileged 1  \
   --ssh-public-keys /root/.ssh/authorized_keys  \
   --password="minio"  \
