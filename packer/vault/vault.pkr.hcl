@@ -30,6 +30,10 @@ build {
     ]
   }
 
+  provisioner "shell" {
+    script = "../cloud.sh"
+  }
+
   provisioner "file" {
     source = "vault.hcl"
     destination = "/etc/vault.hcl"
