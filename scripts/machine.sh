@@ -12,6 +12,58 @@ fi
 . "${machine_config}/options"
 
 
+populate_secrets() {
+  secrets_file="$1"
+
+  # get the vault token, but not if we're creating the vault container
+  if [ "${hostname}" = "vault" ]; then
+    echo "--> Skipping secret reading as this is the Vault machine"
+    return
+  fi
+
+  echo "--> Populating Secrets"
+
+  vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
+  if [ -z "${vault_vmid}" ]; then
+    echo "--> Unable to find Vault container"
+    return
+  fi
+
+  vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout)
+
+  # workaround for dns being slow in my libvirt instance
+  export VAULT_ADDR="http://$(dig vault +short):8200"
+  export VAULT_TOKEN="${vault_token}"
+
+  # maybe load in policies etc from the machine's dir?
+  # i.e. vault policy write ${machine_config}/vault_policy
+  policy_name="${hostname}-ro"
+
+  echo "    Creating policy ${policy_name}..."
+
+  (cat <<EOF
+  path "kv/${hostname}/*" {
+    capabilities = [ "read", "list" ]
+  }
+EOF
+) | vault policy write "${policy_name}" -
+
+  echo "    Done"
+  echo "    Creating token..."
+
+  token=$(vault token create \
+    -display-name "${hostname}" \
+    -policy "${policy_name}" \
+    -field token)
+
+  echo "    Done"
+  echo "    Writing secrets to disk"
+
+  echo "VAULT_TOKEN='${token}'" >> "${secrets_file}"
+
+  echo "--> Done"
+}
+
 echo "==> Creating ${hostname}"
 
 if pct list | grep "${hostname}" > /dev/null; then
@@ -24,12 +76,19 @@ echo "--> New ID: ${vmid}"
 
 
 host_dir="/var/lib/lxc/${vmid}/host"
+
+echo "    Creating host directory"
+# ensure the directory isn't reused
+rm -rf "${host_dir}" || true
 mkdir -p "${host_dir}"
 mkdir -p "${host_dir}/boot"
 
+# copy the machine's contents to the host dir so its accessible to the container
+cp "${machine_config}"/* "${host_dir}"
 
-# write secrets
-echo "SECRET=value" > "${host_dir}/secrets"
+echo "    Done"
+
+populate_secrets "${host_dir}/secrets"
 
 # configure boot script
 if [ -n "${bootscript:-""}" ]; then
