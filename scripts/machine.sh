@@ -1,17 +1,14 @@
 #!/bin/sh
 
 set -eu
-template_path="/var/lib/vz/template/cache"
-
-machine_config="${1:-""}"
-if [ -z "${machine_config}" ]; then
-  echo "no machine config specified"
-  exit 1
-fi
-
-. "${machine_config}/options"
 
 configure_vault() {
+
+  vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
+  if [ -z "${vault_vmid}" ]; then
+    echo "--> Unable to find Vault container"
+    exit 1
+  fi
 
   vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout)
   vault_ip=$(dig vault +short)
@@ -19,6 +16,18 @@ configure_vault() {
   # workaround for dns being slow in my libvirt instance
   export VAULT_ADDR="http://${vault_ip}:8200"
   export VAULT_TOKEN="${vault_token}"
+}
+
+create_password() {
+  hostname="$1"
+  password="$(cat /proc/sys/kernel/random/uuid)"
+
+  vault kv put -mount=kv \
+    "machines/${hostname}/root" \
+    "username=root" \
+    "password=${password}"
+
+  echo "${password}"
 }
 
 populate_secrets() {
@@ -32,12 +41,6 @@ populate_secrets() {
   fi
 
   echo "--> Populating Secrets"
-
-  vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
-  if [ -z "${vault_vmid}" ]; then
-    echo "--> Unable to find Vault container"
-    return
-  fi
 
   # maybe load in policies etc from the machine's dir?
   # i.e. vault policy write ${machine_config}/vault_policy
@@ -101,6 +104,16 @@ configure_bootscript() {
 }
 
 main() {
+  template_path="/var/lib/vz/template/cache"
+
+  machine_config="${1:-""}"
+  if [ -z "${machine_config}" ]; then
+    echo "no machine config specified"
+    exit 1
+  fi
+
+  . "${machine_config}/options"
+
   echo "==> Creating ${hostname}"
 
   if pct list | grep "${hostname}" > /dev/null; then
@@ -109,15 +122,19 @@ main() {
   fi
 
   vmid=$(pvesh get /cluster/nextid)
-  echo "    New ID: ${vmid}"
 
+  echo "    New ID:     ${vmid}"
+  echo "    Template:   ${template}"
+  echo "    Memory:     ${memory}"
+  echo "    Root Disk:  ${rootsize}"
 
   host_dir="/var/lib/lxc/${vmid}/host"
 
+  configure_vault
   populate_host_mount "${machine_config}" "${host_dir}"
   populate_secrets "${hostname}" "${host_dir}/secrets"
-
   configure_bootscript "${machine_config}" "${host_dir}" "${bootscript}"
+  password=$(create_password "${hostname}")
 
   extra_mounts=""
   if [ -n "${volume:-""}" ]; then
@@ -135,7 +152,7 @@ main() {
     ${extra_mounts} \
     --unprivileged 1  \
     --ssh-public-keys /root/.ssh/authorized_keys  \
-    --password="minio"  \
+    --password="${password}"  \
     --onboot 1 \
     --start 1
 }
