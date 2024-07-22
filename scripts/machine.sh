@@ -11,9 +11,19 @@ fi
 
 . "${machine_config}/options"
 
+configure_vault() {
+
+  vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout)
+  vault_ip=$(dig vault +short)
+
+  # workaround for dns being slow in my libvirt instance
+  export VAULT_ADDR="http://${vault_ip}:8200"
+  export VAULT_TOKEN="${vault_token}"
+}
 
 populate_secrets() {
-  secrets_file="$1"
+  hostname="$1"
+  secrets_file="$2"
 
   # get the vault token, but not if we're creating the vault container
   if [ "${hostname}" = "vault" ]; then
@@ -28,12 +38,6 @@ populate_secrets() {
     echo "--> Unable to find Vault container"
     return
   fi
-
-  vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout)
-
-  # workaround for dns being slow in my libvirt instance
-  export VAULT_ADDR="http://$(dig vault +short):8200"
-  export VAULT_TOKEN="${vault_token}"
 
   # maybe load in policies etc from the machine's dir?
   # i.e. vault policy write ${machine_config}/vault_policy
@@ -64,55 +68,76 @@ EOF
   echo "--> Done"
 }
 
-echo "==> Creating ${hostname}"
+populate_host_mount() {
+  config_path="$1"
+  host_dir="$2"
 
-if pct list | grep "${hostname}" > /dev/null; then
-  echo "--> Machine exists, skipping"
-  exit 0
-fi
+  echo "    Creating host directory"
+  # ensure the directory isn't reused
+  rm -rf "${host_dir}" || true
+  mkdir -p "${host_dir}"
+  mkdir -p "${host_dir}/boot"
 
-vmid=$(pvesh get /cluster/nextid)
-echo "--> New ID: ${vmid}"
+  # copy the machine's contents to the host dir so its accessible to the container
+  cp "${config_path}"/* "${host_dir}"
 
+  echo "    Done"
+}
 
-host_dir="/var/lib/lxc/${vmid}/host"
+configure_bootscript() {
+  machine_config="$1"
+  host_dir="$2"
+  bootscript="$3"
 
-echo "    Creating host directory"
-# ensure the directory isn't reused
-rm -rf "${host_dir}" || true
-mkdir -p "${host_dir}"
-mkdir -p "${host_dir}/boot"
+  if [ -z "${bootscript:-""}" ]; then
+    return
+  fi
 
-# copy the machine's contents to the host dir so its accessible to the container
-cp "${machine_config}"/* "${host_dir}"
-
-echo "    Done"
-
-populate_secrets "${host_dir}/secrets"
-
-# configure boot script
-if [ -n "${bootscript:-""}" ]; then
-  echo "--> configuring boot script"
+  echo "    Configuring boot script"
   cp "${machine_config}/${bootscript}" "${host_dir}/boot/user.start"
   chmod +x "${host_dir}/boot/user.start"
-fi
 
-extra_mounts=""
-if [ -n "${volume:-""}" ]; then
-  extra_mounts="--mp2 ${volume}"
-fi
+  echo "    Done"
+}
 
-pct create "${vmid}" "${template_path}/${template}" \
-  --hostname "${hostname}"  \
-  --memory "${memory}"  \
-  --net0 name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth \
-  --storage local-lvm \
-  --rootfs "local-lvm:${rootsize}" \
-  --mp0 "${host_dir},mp=/host" \
-  --mp1 "${host_dir}/boot,mp=/etc/local.d" \
-  ${extra_mounts} \
-  --unprivileged 1  \
-  --ssh-public-keys /root/.ssh/authorized_keys  \
-  --password="minio"  \
-  --onboot 1 \
-  --start 1
+main() {
+  echo "==> Creating ${hostname}"
+
+  if pct list | grep "${hostname}" > /dev/null; then
+    echo "--> Machine exists, skipping"
+    exit 0
+  fi
+
+  vmid=$(pvesh get /cluster/nextid)
+  echo "    New ID: ${vmid}"
+
+
+  host_dir="/var/lib/lxc/${vmid}/host"
+
+  populate_host_mount "${machine_config}" "${host_dir}"
+  populate_secrets "${hostname}" "${host_dir}/secrets"
+
+  configure_bootscript "${machine_config}" "${host_dir}" "${bootscript}"
+
+  extra_mounts=""
+  if [ -n "${volume:-""}" ]; then
+    extra_mounts="--mp2 ${volume}"
+  fi
+
+  pct create "${vmid}" "${template_path}/${template}" \
+    --hostname "${hostname}"  \
+    --memory "${memory}"  \
+    --net0 name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth \
+    --storage local-lvm \
+    --rootfs "local-lvm:${rootsize}" \
+    --mp0 "${host_dir},mp=/host" \
+    --mp1 "${host_dir}/boot,mp=/etc/local.d" \
+    ${extra_mounts} \
+    --unprivileged 1  \
+    --ssh-public-keys /root/.ssh/authorized_keys  \
+    --password="minio"  \
+    --onboot 1 \
+    --start 1
+}
+
+main "$@"
