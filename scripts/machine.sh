@@ -4,6 +4,11 @@ set -eu
 
 configure_vault() {
 
+  if [ "${hostname}" = "vault" ]; then
+    echo "--> Skipping secret reading as this is the Vault machine"
+    return
+  fi
+
   vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
   if [ -z "${vault_vmid}" ]; then
     echo "--> Unable to find Vault container"
