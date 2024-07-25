@@ -2,16 +2,20 @@
 
 set -eu
 
+log() {
+  echo "$@" >&2
+}
+
 configure_vault() {
 
   if [ "${hostname}" = "vault" ]; then
-    echo "--> Skipping secret reading as this is the Vault machine"
+    log "--> Skipping secret reading as this is the Vault machine"
     return
   fi
 
   vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
   if [ -z "${vault_vmid}" ]; then
-    echo "--> Unable to find Vault container"
+    log "--> Unable to find Vault container"
     exit 1
   fi
 
@@ -27,10 +31,14 @@ create_password() {
   hostname="$1"
   password="$(cat /proc/sys/kernel/random/uuid)"
 
-  vault kv put -mount=kv \
-    "machines/${hostname}/root" \
-    "username=root" \
-    "password=${password}"
+  if [ "${hostname}" != "vault" ]; then
+    vault kv put -mount=kv \
+      "machines/${hostname}/root" \
+      "username=root" \
+      "password=${password}"
+  else
+    log "--> Vault Password: ${password}"
+  fi
 
   echo "${password}"
 }
@@ -41,17 +49,17 @@ populate_secrets() {
 
   # get the vault token, but not if we're creating the vault container
   if [ "${hostname}" = "vault" ]; then
-    echo "--> Skipping secret reading as this is the Vault machine"
+    log "--> Skipping secret reading as this is the Vault machine"
     return
   fi
 
-  echo "--> Populating Secrets"
+  log "--> Populating Secrets"
 
   # maybe load in policies etc from the machine's dir?
   # i.e. vault policy write ${machine_config}/vault_policy
   policy_name="${hostname}-ro"
 
-  echo "    Creating policy ${policy_name}..."
+  log "    Creating policy ${policy_name}..."
 
   (cat <<EOF
   path "kv/${hostname}/*" {
@@ -60,27 +68,27 @@ populate_secrets() {
 EOF
 ) | vault policy write "${policy_name}" -
 
-  echo "    Done"
-  echo "    Creating token..."
+  log "    Done"
+  log "    Creating token..."
 
   token=$(vault token create \
     -display-name "${hostname}" \
     -policy "${policy_name}" \
     -field token)
 
-  echo "    Done"
-  echo "    Writing secrets to disk"
+  log "    Done"
+  log "    Writing secrets to disk"
 
   echo "VAULT_TOKEN='${token}'" >> "${secrets_file}"
 
-  echo "--> Done"
+  log "    Done"
 }
 
 populate_host_mount() {
   config_path="$1"
   host_dir="$2"
 
-  echo "    Creating host directory"
+  log "    Creating host directory"
   # ensure the directory isn't reused
   rm -rf "${host_dir}" || true
   mkdir -p "${host_dir}"
@@ -89,7 +97,7 @@ populate_host_mount() {
   # copy the machine's contents to the host dir so its accessible to the container
   cp "${config_path}"/* "${host_dir}"
 
-  echo "    Done"
+  log "    Done"
 }
 
 configure_bootscript() {
@@ -101,11 +109,11 @@ configure_bootscript() {
     return
   fi
 
-  echo "    Configuring boot script"
+  log "    Configuring boot script"
   cp "${machine_config}/${bootscript}" "${host_dir}/boot/user.start"
   chmod +x "${host_dir}/boot/user.start"
 
-  echo "    Done"
+  log "    Done"
 }
 
 main() {
@@ -113,32 +121,32 @@ main() {
 
   machine_config="${1:-""}"
   if [ -z "${machine_config}" ]; then
-    echo "no machine config specified"
+    log "--> no machine config specified"
     exit 1
   fi
 
   . "${machine_config}/options"
 
-  echo "==> Creating ${hostname}"
+  log "==> Creating ${hostname}"
 
   if pct list | grep "${hostname}" > /dev/null; then
-    echo "--> Machine exists, skipping"
+    log "--> Machine exists, skipping"
     exit 0
   fi
 
   vmid=$(pvesh get /cluster/nextid)
 
-  echo "    New ID:     ${vmid}"
-  echo "    Template:   ${template}"
-  echo "    Memory:     ${memory}"
-  echo "    Root Disk:  ${rootsize}"
+  log "    New ID:     ${vmid}"
+  log "    Template:   ${template}"
+  log "    Memory:     ${memory}"
+  log "    Root Disk:  ${rootsize}"
 
   host_dir="/var/lib/lxc/${vmid}/host"
 
   configure_vault
   populate_host_mount "${machine_config}" "${host_dir}"
   populate_secrets "${hostname}" "${host_dir}/secrets"
-  configure_bootscript "${machine_config}" "${host_dir}" "${bootscript}"
+  configure_bootscript "${machine_config}" "${host_dir}" "${bootscript:-""}"
   password=$(create_password "${hostname}")
 
   extra_mounts=""
