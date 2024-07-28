@@ -145,6 +145,10 @@ main() {
     exit 0
   fi
 
+  if ! [ -f "${template_path}/${template}.tar.xz" ]; then
+    ./scripts/build-machine.sh "${template}"
+  fi
+
   vmid=$(pvesh get /cluster/nextid)
 
   log "    New ID:     ${vmid}"
