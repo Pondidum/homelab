@@ -3,7 +3,7 @@
 set -eu
 
 log() {
-  echo "$@" >&2
+  echo "${LIGHT_BLUE}${1}${COLOR_RESET}" >&2
 }
 
 configure_vault() {
@@ -13,18 +13,30 @@ configure_vault() {
     return
   fi
 
+  log "==> Configuring Vault access"
+
   vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
   if [ -z "${vault_vmid}" ]; then
     log "--> Unable to find Vault container"
     exit 1
   fi
-
-  vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout)
+  # workaround for dns being slow in my libvirt instance
   vault_ip=$(dig vault +short)
 
-  # workaround for dns being slow in my libvirt instance
+  while ! vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout); do
+    log "    waiting for vault to be initialised"
+    sleep 1s
+  done
+
   export VAULT_ADDR="http://${vault_ip}:8200"
   export VAULT_TOKEN="${vault_token}"
+
+  while ! vault status 2> /dev/null; do
+    log "    Waiting for Vault to unseal"
+    sleep 1s
+  done
+
+  log "    Done"
 }
 
 create_password() {
@@ -49,7 +61,6 @@ populate_secrets() {
 
   # get the vault token, but not if we're creating the vault container
   if [ "${hostname}" = "vault" ]; then
-    log "--> Skipping secret reading as this is the Vault machine"
     return
   fi
 
