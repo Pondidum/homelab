@@ -31,7 +31,7 @@ configure_vault() {
   export VAULT_ADDR="http://${vault_ip}:8200"
   export VAULT_TOKEN="${vault_token}"
 
-  while ! vault status 2> /dev/null; do
+  while ! vault status; do
     log "    Waiting for Vault to unseal"
     sleep 1s
   done
