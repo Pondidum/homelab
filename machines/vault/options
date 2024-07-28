@@ -1,4 +1,4 @@
-template=vault.tar.xz
+template=vault
 hostname=vault
 memory=512
 rootsize=8

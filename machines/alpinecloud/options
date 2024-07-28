@@ -1,4 +1,4 @@
-template=alpine-cloud.tar.xz
+template=alpine-cloud
 hostname=alpinecloud
 memory=512
 rootsize=8

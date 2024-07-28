@@ -165,7 +165,7 @@ main() {
     extra_mounts="--mp2 ${volume}"
   fi
 
-  pct create "${vmid}" "${template_path}/${template}" \
+  pct create "${vmid}" "${template_path}/${template}.tar.xz" \
     --hostname "${hostname}"  \
     --memory "${memory}"  \
     --net0 name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth \
