@@ -7,5 +7,16 @@ echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://
   | sudo tee /etc/apt/sources.list.d/hashicorp.list
 
 sudo apt update
-sudo apt install packer vim -yq
+sudo apt install -yq \
+  packer \
+  vim \
+  git \
+  unzip
+
 sudo update-alternatives --set editor "$(which vim.basic)"
+
+echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
+
+curl https://releases.hashicorp.com/vault/1.17.2/vault_1.17.2_linux_amd64.zip -o vault.zip
+unzip vault.zip
+mv vault /usr/bin/
