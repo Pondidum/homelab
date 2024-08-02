@@ -1,0 +1,5 @@
+template=minio
+hostname=minio
+memory=512
+rootsize=8
+volume="local-lvm:4,mp=/var/lib/minio"
