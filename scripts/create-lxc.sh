@@ -93,6 +93,7 @@ EOF
   log "    Writing secrets to disk"
 
   echo "VAULT_TOKEN='${token}'" >> "${secrets_file}"
+  echo "VAULT_ADDR='http://vault:8200'" >> "${secrets_file}"
 
   log "    Done"
 }
