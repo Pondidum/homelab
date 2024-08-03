@@ -7,6 +7,7 @@ branch=$(echo "${gitref}" | cut -d/ -f3)
 
 # update the hook!
 git show "${branch}:scripts/hook-post-receive.sh" > hooks/post-receive
+chmod +x hooks/post-receive
 
 rm -rf "$HOME/homelab"
 mkdir -p "$HOME/homelab"
