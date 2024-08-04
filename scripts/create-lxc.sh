@@ -70,12 +70,12 @@ populate_secrets() {
 
   # maybe load in policies etc from the machine's dir?
   # i.e. vault policy write ${machine_config}/vault_policy
-  policy_name="${hostname}-ro"
+  policy_name="machine-${hostname}"
 
   log "    Creating policy ${policy_name}..."
 
   (cat <<EOF
-  path "kv/apps/${hostname}/*" {
+  path "kv/data/apps/${hostname}/*" {
     capabilities = [ "create", "update", "read", "list", "delete" ]
   }
 EOF
