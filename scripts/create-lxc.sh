@@ -71,6 +71,8 @@ main() {
   template_path="/var/lib/vz/template/cache"
 
   machine_config="${1:-""}"
+  migration="${2:-""}"
+
   if [ -z "${machine_config}" ]; then
     log "--> no machine config specified"
     exit 1
@@ -78,7 +80,7 @@ main() {
 
   . "${machine_config}/options"
 
-  if pct list | grep "${hostname}" > /dev/null; then
+  if pct list | grep "${hostname}\s" > /dev/null; then
     log "--> Machine exists, skipping"
     exit 0
   fi
@@ -99,8 +101,13 @@ main() {
   password=$(create_password "${hostname}")
 
   extra_mounts=""
-  if [ -n "${volume:-""}" ]; then
+  if [ -n "${volume:-""}" ] && [ -z "${migration}" ]; then
     extra_mounts="--mp2 ${volume}"
+  fi
+
+  start="1"
+  if [ -n "${migration}" ]; then
+    start="0"
   fi
 
   pct create "${vmid}" "${template_path}/${template}.tar.xz" \
@@ -116,7 +123,7 @@ main() {
     --ssh-public-keys /root/.ssh/authorized_keys  \
     --password="${password}"  \
     --onboot 1 \
-    --start 1
+    --start "${start}"
 }
 
 main "$@"
