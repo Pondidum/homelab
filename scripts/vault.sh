@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. ./scripts/util.sh
+
 configure_vault() {
   hostname="$1"
 

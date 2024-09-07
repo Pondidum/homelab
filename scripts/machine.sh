@@ -2,9 +2,7 @@
 
 set -eu
 
-log() {
-  echo "${LIGHT_BLUE}${1}${COLOR_RESET}" >&2
-}
+. ./scripts/util.sh
 
 main() {
   template_path="/var/lib/vz/template/cache"

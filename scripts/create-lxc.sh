@@ -2,12 +2,9 @@
 
 set -eu
 
+. ./scripts/util.sh
 . ./scripts/vault.sh
 . ./scripts/proxmox.sh
-
-log() {
-  echo "${LIGHT_BLUE}${1}${COLOR_RESET}" >&2
-}
 
 create_password() {
   hostname="$1"

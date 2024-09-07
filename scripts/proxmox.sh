@@ -2,6 +2,8 @@
 
 set -eu
 
+. ./scripts/util.sh
+
 create_proxmox_apikey() {
   hostname="$1"
 
