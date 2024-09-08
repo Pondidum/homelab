@@ -2,5 +2,5 @@ template=vault
 hostname=vault
 memory=512
 rootsize=8
-volume="local-zfs:4,mp=/var/lib/vault"
+volume="4,mp=/var/lib/vault"
 bootscript=configure-vault.sh

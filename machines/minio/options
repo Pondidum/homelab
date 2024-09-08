@@ -2,4 +2,4 @@ template=minio
 hostname=minio
 memory=512
 rootsize=8
-volume="local-zfs:4,mp=/var/lib/minio"
+volume="4,mp=/var/lib/minio"

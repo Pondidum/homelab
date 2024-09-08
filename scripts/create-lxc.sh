@@ -86,11 +86,13 @@ main() {
   fi
 
   vmid=$(pvesh get /cluster/nextid)
+  storage=$(pvesm status -content rootdir | tail -1 | cut -d' ' -f 1)
 
   log "    New ID:     ${vmid}"
   log "    Template:   ${template}"
   log "    Memory:     ${memory}"
   log "    Root Disk:  ${rootsize}"
+  log "    Storage:    ${storage}"
 
   host_dir="/var/lib/lxc/${vmid}/host"
 
@@ -102,7 +104,7 @@ main() {
 
   extra_mounts=""
   if [ -n "${volume:-""}" ] && [ -z "${migration}" ]; then
-    extra_mounts="--mp2 ${volume}"
+    extra_mounts="--mp2 ${storage}:${volume}"
   fi
 
   start="1"
@@ -114,8 +116,8 @@ main() {
     --hostname "${hostname}"  \
     --memory "${memory}"  \
     --net0 name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth \
-    --storage local-zfs \
-    --rootfs "local-zfs:${rootsize}" \
+    --storage "${storage}" \
+    --rootfs "${storage}:${rootsize}" \
     --mp0 "${host_dir},mp=/host" \
     --mp1 "${host_dir}/boot,mp=/etc/local.d" \
     ${extra_mounts} \
