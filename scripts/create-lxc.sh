@@ -114,8 +114,8 @@ main() {
     --hostname "${hostname}"  \
     --memory "${memory}"  \
     --net0 name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth \
-    --storage local-lvm \
-    --rootfs "local-lvm:${rootsize}" \
+    --storage local-zfs \
+    --rootfs "local-zfs:${rootsize}" \
     --mp0 "${host_dir},mp=/host" \
     --mp1 "${host_dir}/boot,mp=/etc/local.d" \
     ${extra_mounts} \
