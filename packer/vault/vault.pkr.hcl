@@ -35,6 +35,11 @@ build {
   }
 
   provisioner "file" {
+    source = ".profile"
+    destination = "/root/.profile"
+  }
+
+  provisioner "file" {
     source = "vault.hcl"
     destination = "/etc/vault.hcl"
   }
