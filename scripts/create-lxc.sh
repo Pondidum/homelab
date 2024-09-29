@@ -80,7 +80,7 @@ main() {
 
   . "${machine_config}/options"
 
-  if pct list | grep "${hostname}\s" > /dev/null; then
+  if pct list | grep "\s${hostname}\s" > /dev/null; then
     log "--> Machine exists, skipping"
     exit 0
   fi
