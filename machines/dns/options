@@ -1,0 +1,4 @@
+template=coredns
+hostname=dns
+memory=512
+rootsize=8

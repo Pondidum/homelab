@@ -3,5 +3,5 @@
 set -eu
 
 ./scripts/machine.sh "machines/vault"
-# ./scripts/machine.sh "machines/alpinecloud"
+./scripts/machine.sh "machines/dns"
 # ./scripts/machine.sh "machines/minio"
