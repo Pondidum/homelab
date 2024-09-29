@@ -17,15 +17,13 @@ configure_vault() {
     log "--> Unable to find Vault container"
     exit 1
   fi
-  # workaround for dns being slow in my libvirt instance
-  vault_ip=$(dig vault +short)
 
   while ! vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout); do
     log "    waiting for vault to be initialised"
     sleep 1s
   done
 
-  export VAULT_ADDR="http://${vault_ip}:8200"
+  export VAULT_ADDR="http://vault.verstas.xyz:8200"
   export VAULT_TOKEN="${vault_token}"
 
   while ! vault status; do
@@ -66,7 +64,7 @@ EOF
   log "    Writing secrets to disk"
 
   echo "VAULT_TOKEN='${token}'"
-  echo "VAULT_ADDR='http://vault:8200'"
+  echo "VAULT_ADDR='${VAULT_ADDR}'"
 
   log "    Done"
 }
