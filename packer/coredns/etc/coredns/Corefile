@@ -5,14 +5,14 @@
   cache
 }
 
-localdomain:53 {
-  forward . 192.168.1.1
+verstas.xyz:53 {
+  forward . 10.0.0.1
   log
   errors
   cache
 }
 
-verstas.xyz:53 {
+svc.verstas.xyz:53 {
   file /etc/coredns/db.verstas.xyz
   log
   errors
