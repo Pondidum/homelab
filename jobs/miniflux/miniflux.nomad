@@ -11,7 +11,7 @@ job "miniflux" {
 
     service {
       name     = "${JOB}"
-      tags     = ["ingress:enabled"]
+      tags     = ["ingress:enabled", "ingress:external"]
       port     = "http"
       provider = "nomad"
     }
