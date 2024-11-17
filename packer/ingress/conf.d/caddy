@@ -1,3 +1,0 @@
-eth0ip=$(ip -f inet addr show eth0 | awk '/inet / {print $2}' | cut -d "/" -f 1)
-
-export "PUBLIC_IP=${eth0ip}"
