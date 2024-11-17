@@ -1,0 +1,4 @@
+template=lb
+hostname=lb
+memory=512
+rootsize=8
