@@ -13,7 +13,7 @@ job "otel-collector" {
 
     service {
       name     = "${JOB}"
-      tags     = ["otel"]
+      tags     = ["otel", "ingress:enabled"]
       port     = "grpc"
       provider = "nomad"
     }
@@ -22,10 +22,12 @@ job "otel-collector" {
       driver = "docker"
 
       config {
-        image = "otel/opentelemetry-collector-contrib:0.92.0"
+        image = "otel/opentelemetry-collector-contrib:0.114.0"
         args = [ "--config", "local/collector.conf" ]
         ports = [ "grpc" ]
       }
+
+      vault {}
 
       template {
         data = <<EOF
@@ -33,28 +35,26 @@ receivers:
   otlp:
     protocols:
       grpc:
-
-processors:
-  attributes:
-    actions:
-    - action: upsert
-      key: environment
-      value: local
+        endpoint: 0.0.0.0:4317
 
 exporters:
-{{- with nomadVar "nomad/jobs/otel-collector" }}
+{{ with secret "kv/data/nomad/jobs/otel-collector/honeycomb" }}
   otlp:
     endpoint: "api.eu1.honeycomb.io:443"
     headers:
-      "x-honeycomb-team": "{{ .honeycomb_apikey }}"
+      "x-honeycomb-team": "{{ .Data.data.apikey }}"
 {{- end }}
+  debug:
 
 service:
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [attributes]
-      exporters: [otlp]
+      receivers:
+      - otlp
+      processors: []
+      exporters:
+      - otlp
+      - debug
         EOF
         destination = "local/collector.conf"
         change_mode = "signal"
