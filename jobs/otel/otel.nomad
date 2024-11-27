@@ -1,4 +1,4 @@
-job "otel-collector" {
+job "otel" {
   datacenters = ["*"]
   type = "service"
 
@@ -13,12 +13,12 @@ job "otel-collector" {
 
     service {
       name     = "${JOB}"
-      tags     = ["otel", "ingress:enabled"]
+      tags     = ["otel", "ingress:enabled", "ingress:grpc"]
       port     = "grpc"
       provider = "nomad"
     }
 
-    task "otel-collector" {
+    task "otel" {
       driver = "docker"
 
       config {
@@ -38,7 +38,7 @@ receivers:
         endpoint: 0.0.0.0:4317
 
 exporters:
-{{ with secret "kv/data/nomad/jobs/otel-collector/honeycomb" }}
+{{ with secret "kv/data/nomad/jobs/otel/honeycomb" }}
   otlp:
     endpoint: "api.eu1.honeycomb.io:443"
     headers:

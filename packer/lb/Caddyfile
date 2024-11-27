@@ -13,7 +13,11 @@ https://koti.sammalmaa.fi {
   reverse_proxy http://nomad.verstas.xyz:80
 }
 
-https://*.svc.verstas.xyz:80 {
+https://*.svc.verstas.xyz {
   reverse_proxy http://nomad.verstas.xyz:8000
   tls internal
+}
+
+http://otel.svc.verstas.xyz:4317 {
+  reverse_proxy h2c://nomad.verstas.xyz:4317
 }
