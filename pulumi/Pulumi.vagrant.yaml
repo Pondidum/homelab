@@ -1,9 +1,0 @@
-config:
-  proxmoxve:endpoint: https://192.168.121.87:8006
-  proxmoxve:insecure: "true"
-  proxmoxve:password: vagrant
-  proxmoxve:username: root@pam
-  proxmox:nodename: pve
-  proxmox:storage: local-lvm
-  proxmox:bridge: vmbr0
-  proxmox:private-bridge: vnet0
