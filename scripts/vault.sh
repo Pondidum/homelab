@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu
+
 . ./scripts/util.sh
 
 configure_vault() {
@@ -10,6 +12,8 @@ configure_vault() {
     return
   fi
 
+
+
   log "==> Configuring Vault access"
 
   vault_vmid=$(pct list | grep vault | cut -d" " -f 1)
@@ -18,13 +22,20 @@ configure_vault() {
     exit 1
   fi
 
+
   while ! vault_token=$(pct pull "${vault_vmid}" /var/lib/vault/.root_token /dev/stdout); do
-    log "    waiting for vault to be initialised"
+    log "    Waiting for vault to be initialised"
     sleep 1s
   done
 
-  export VAULT_ADDR="http://vault.verstas.xyz:8200"
+  if [ -n "${DOMAIN:-""}" ]; then
+    export VAULT_ADDR="http://vault.${DOMAIN}:8200"
+  else
+    export VAULT_ADDR="http://vault:8200"
+  fi
   export VAULT_TOKEN="${vault_token}"
+
+  log "    Vault Addr: ${VAULT_ADDR}"
 
   while ! vault status; do
     log "    Waiting for Vault to unseal"
