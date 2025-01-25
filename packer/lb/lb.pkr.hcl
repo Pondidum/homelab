@@ -46,6 +46,10 @@ build {
     ]
   }
 
+  provisioner "shell" {
+    script = "../cloud.sh"
+  }
+
   post-processor "shell-local" {
     script = "../post-process.sh"
   }
