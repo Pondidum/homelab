@@ -16,6 +16,7 @@ sudo apt install -yq \
 sudo update-alternatives --set editor "$(which vim.basic)"
 
 echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
+echo 'DBUS_SESSION_BUS_ADDRESS=/dev/null' >> /etc/environment
 
 curl https://releases.hashicorp.com/vault/1.17.2/vault_1.17.2_linux_amd64.zip -o vault.zip
 unzip vault.zip
