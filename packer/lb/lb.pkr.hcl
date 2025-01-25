@@ -7,7 +7,7 @@ packer {
   }
 }
 
-source "lxc" "vault" {
+source "lxc" "lb" {
   config_file               = "config"
   template_name             = "download"
   template_parameters = [
@@ -20,7 +20,7 @@ source "lxc" "vault" {
 }
 
 build {
-  sources = [ "lxc.vault" ]
+  sources = [ "lxc.lb" ]
 
   provisioner "shell" {
     inline = [
