@@ -41,8 +41,8 @@ build {
   }
 
   provisioner "file" {
-    source = "etc/conf.d/postgresql"
-    destination = "/etc/conf.d/postgresql"
+    source = "etc/init.d/postgresql"
+    destination = "/etc/init.d/postgresql"
   }
 
   provisioner "file" {

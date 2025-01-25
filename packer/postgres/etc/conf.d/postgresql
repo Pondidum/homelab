@@ -1,3 +1,0 @@
-
-echo 'postgres' > /tmp/pgpwd
-initdb_opts="-E UTF-8 --locale-provider=icu --icu-locale=en-001-x-icu --data-checksums --username=postgres --pwfile=/tmp/pgpwd"

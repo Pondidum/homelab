@@ -231,6 +231,30 @@ setup() {
 		: ${initdb_opts:="-E UTF-8 --locale=C --data-checksums"}
 	fi
 
+	### BEGIN VAULT CREDENTIALS
+	set -a
+	source /host/secrets
+	set +a
+
+	vault_path="apps/postgres/sa"
+	if ! json="$(vault kv get -format=json "kv/${vault_path}")"; then
+
+		einfo "Credentials not found in Vault, generating"
+		vault kv put -mount=kv "${vault_path}" \
+			"username=postgres" \
+			"password=$(cat /proc/sys/kernel/random/uuid)"
+
+		json="$(vault kv get -format=json "kv/${vault_path}")"
+	fi
+
+	user=$(echo "${json}" | jq -r .data.data.username)
+	pass=$(echo "${json}" | jq -r .data.data.password)
+
+	echo "${pass}" > /tmp/pgpwd
+	initdb_opts="${initdb_opts} --username='${user}' --pwfile=/tmp/pgpwd"
+
+	### END VAULT CREDENTIALS
+
 	# If data_dir exists, backup configs.
 	if [ -d "$data_dir" ]; then
 		bkpdir="$(mktemp -d)"
@@ -245,6 +269,10 @@ setup() {
 	cd "$data_dir"  # to avoid the: could not change directory to "/root"
 	su $user -c "/usr/bin/initdb $initdb_opts --pgdata $data_dir"
 	local retval=$?
+
+	### BEGIN VAULT CREDENTIALS
+	rm /tmp/pgpwd
+	### END VAULT CREDENTIALS
 
 	if [ -d "$bkpdir" ]; then
 		# Move backuped configs back.
