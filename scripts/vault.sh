@@ -50,7 +50,7 @@ create_vault_token() {
     capabilities = [ "create", "update", "read", "list", "delete" ]
   }
 EOF
-) | vault policy write "${policy_name}" -
+) | vault policy write "${policy_name}" - >/dev/null 2>&1
 
   log "    Done"
   log "    Creating token..."
