@@ -1,0 +1,5 @@
+template=postgres
+hostname=postgres
+memory=1024
+rootsize=8
+volume="20,mp=/var/lib/postgresql/16/"
