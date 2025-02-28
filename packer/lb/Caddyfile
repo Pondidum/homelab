@@ -1,16 +1,17 @@
 {
   default_bind "{$PUBLIC_IP}"
-  log default {
-    output file /tmp/caddy {
-        roll_disabled
-        roll_uncompressed
-        roll_local_time
-    }
+
+  servers {
+    protocols h1 h2 h3 h2c
   }
 }
 
 https://koti.sammalmaa.fi {
   reverse_proxy http://nomad.verstas.xyz:80
+}
+
+http://*.svc.verstas.xyz:80 {
+  reverse_proxy http://nomad.verstas.xyz:8000
 }
 
 https://*.svc.verstas.xyz {
