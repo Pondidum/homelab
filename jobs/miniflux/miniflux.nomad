@@ -20,7 +20,7 @@ job "miniflux" {
       driver = "exec"
 
       artifact {
-        source = "https://github.com/miniflux/v2/releases/download/2.0.50/miniflux-linux-amd64"
+        source = "https://github.com/miniflux/v2/releases/download/2.2.9/miniflux-linux-amd64"
         destination = "local/miniflux"
         mode = "file"
       }
